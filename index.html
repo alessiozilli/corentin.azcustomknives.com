@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#B4471F">
+<meta name="robots" content="noindex, nofollow">
+<title>Le fil</title>
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Le fil">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+
+<style>
+/* ==========================================================================
+   LE FIL. Corentin's own seat, kept as correspondence.
+
+   A parting gift. He finishes his co-op on 2026-09-19 and flies home to
+   France. This page is how he keeps talking to the shop he worked in.
+
+   CORRESPONDENCE, NOT CHAT. He is nine time zones away and the mind that
+   answers is shared with the rest of the fleet. So he writes a letter, it is
+   stored the moment he presses the button and he is told so, and the answer
+   is there when he next opens the page. There is no spinner anywhere on this
+   page that pretends something is happening. When the mind is asleep the page
+   says the word "dors" in his own language and tells him the truth: the reply
+   will be waiting for him.
+
+   HIS LANGUAGE. French, fixed. He is French. Warm, plain, tu and not vous.
+   No long dashes anywhere he can read.
+
+   WHO HE IS. The key this browser mints on first open, kept in the browser's
+   own storage. No login, no account, no password, no settings. If the seat is
+   already paired to other devices the database answers "full" and the page
+   says so plainly and sends him to Alessio.
+
+   ALESSIO. One button, and only that button, calls corentin_tell_alessio. It
+   carries the words Corentin typed, puts a line on the shop bus and buzzes
+   Alessio's phone. The mind never presses it. He does.
+
+   NOTHING INBOUND. This page speaks to one host, the Supabase REST endpoint,
+   and to nothing else. No library, no font, no script from anywhere. Corentin
+   has no surface here that asks the shop to run anything.
+
+   THE ATELIER CLOCK. America/Edmonton, the shop's real zone. It is on the
+   screen because it is the reason a reply can take a night, not decoration.
+
+   THE DATA. His own corentin_ functions on the AZCK Supabase, reached with
+   the publishable key and this browser's device key.
+   ========================================================================== */
+:root{
+  --paper:#FBF7F0;
+  --ink:#1A1512;
+  --quiet:#6A5E54;
+  --line:#E4D8C8;
+  --card:#FFFFFF;
+  --ember:#B4471F;
+  --ember-deep:#8E3616;
+  --his:#F4E7DA;
+  --lamp-on:#2E7D4F;
+  --lamp-off:#B08423;
+  --lamp-dead:#8A8078;
+  --body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{overflow-x:hidden}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--body);font-size:18px;line-height:1.5;
+  min-height:100vh;min-height:100dvh;
+}
+button,input,textarea{font-family:inherit;color:inherit}
+:focus{outline:none}
+:focus-visible{outline:3px solid var(--ember);outline-offset:3px}
+
+#app{max-width:620px;margin:0 auto;padding:0 16px calc(env(safe-area-inset-bottom) + 36px)}
+#app>*{min-width:0}
+
+/* the top of the letter */
+header{padding:calc(env(safe-area-inset-top) + 20px) 0 14px;border-bottom:3px solid var(--ember)}
+h1{margin:0;font-family:var(--serif);font-size:34px;font-weight:700;letter-spacing:.01em;color:var(--ember)}
+header p{margin:6px 0 0;font-size:16px;color:var(--quiet)}
+
+/* the thread, oldest at the top, newest at the bottom */
+#thread{padding:20px 0 4px}
+.letter{margin:0 0 22px}
+.side{display:block;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--quiet);margin:0 0 5px 4px}
+.mine .side{text-align:right;margin:0 4px 5px 0}
+.bubble{
+  padding:14px 16px;border-radius:16px;max-width:95%;
+  overflow-wrap:anywhere;white-space:pre-wrap;
+}
+.mine .bubble{background:var(--his);margin-left:auto;border-bottom-right-radius:5px}
+.theirs .bubble{background:var(--card);border:2px solid var(--line);border-bottom-left-radius:5px}
+.theirs{margin-top:12px}
+.stamp{display:block;font-size:14px;color:var(--quiet);margin:6px 4px 0}
+.mine .stamp{text-align:right}
+.pending{
+  display:block;font-size:15px;color:var(--quiet);margin:8px 4px 0;
+  border-left:3px solid var(--line);padding-left:10px;
+}
+.mine .pending{margin-left:auto;max-width:95%}
+.fresh .bubble{border-color:var(--ember)}
+.tag{
+  display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  color:#fff;background:var(--ember);border-radius:999px;padding:2px 9px;margin-left:8px;vertical-align:2px;
+}
+.opening{color:var(--quiet);font-size:17px;margin:0 0 22px}
+.opening strong{color:var(--ink);font-weight:700}
+
+/* the lamp, sitting where he decides to write */
+#state{
+  display:flex;gap:11px;align-items:flex-start;
+  background:var(--card);border:2px solid var(--line);border-radius:14px;
+  padding:13px 15px;margin:0 0 18px;font-size:16px;
+}
+#dot{flex:0 0 auto;width:13px;height:13px;border-radius:50%;background:var(--lamp-dead);margin-top:6px}
+#state.on #dot{background:var(--lamp-on)}
+#state.off #dot{background:var(--lamp-off)}
+#state.dead #dot{background:var(--lamp-dead)}
+#stateText{margin:0}
+#clock{display:block;color:var(--quiet);font-size:15px;margin-top:4px}
+
+/* the box and the buttons */
+form{padding:8px 0 0}
+label{display:block;font-size:17px;color:var(--quiet);margin:0 0 9px}
+#box{
+  width:100%;min-height:128px;font-size:19px;line-height:1.5;
+  padding:14px;border:2px solid var(--ink);border-radius:13px;background:#fff;
+  resize:vertical;
+}
+#box::placeholder{color:#8B8179}
+button.big{
+  min-height:60px;width:100%;margin-top:13px;font-size:20px;font-weight:700;
+  border:0;border-radius:13px;background:var(--ember);color:#fff;
+  -webkit-tap-highlight-color:transparent;
+}
+button.big:active{background:var(--ember-deep)}
+button.second{
+  min-height:56px;width:100%;margin-top:11px;font-size:18px;font-weight:700;
+  border:2px solid var(--ember);border-radius:13px;background:#fff;color:var(--ember);
+  -webkit-tap-highlight-color:transparent;
+}
+button.second:active{background:var(--his)}
+button[disabled]{opacity:.65}
+#note{
+  margin:14px 0 0;font-size:16px;padding:12px 14px;border-radius:12px;
+  background:var(--card);border:2px solid var(--line);white-space:pre-wrap;
+}
+#note:empty{display:none}
+#note.bad{border-color:var(--ember)}
+
+#aside{margin-top:28px;padding-top:20px;border-top:2px solid var(--line)}
+#aside p{margin:0 0 4px;font-size:16px;color:var(--quiet)}
+
+footer{margin-top:34px;padding-top:18px;border-top:2px solid var(--line);font-size:15px;color:var(--quiet)}
+footer p{margin:0 0 7px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Le fil</h1>
+    <p>Tes lettres et les réponses, dans l'ordre.</p>
+  </header>
+
+  <section id="thread" aria-live="polite"></section>
+
+  <form id="write" autocomplete="off">
+    <div id="state" class="dead">
+      <span id="dot" aria-hidden="true"></span>
+      <div><p id="stateText">Je regarde si l'atelier répond.</p><span id="clock"></span></div>
+    </div>
+
+    <label for="box">Écris ta lettre.</label>
+    <textarea id="box" rows="4" placeholder="Ici. Aucune longueur n'est trop longue." autocapitalize="sentences"></textarea>
+    <button type="submit" id="send" class="big">Envoyer</button>
+    <p id="note" role="status"></p>
+  </form>
+
+  <section id="aside">
+    <p>Pour un mot qui doit arriver à Alessio lui-même, tout de suite, sur son téléphone. Le bouton prend ce que tu as écrit dans la boîte.</p>
+    <button type="button" id="tell" class="second">Dire ça à Alessio</button>
+  </section>
+
+  <footer>
+    <p>Pas de compte, pas de mot de passe. Ce navigateur a sa propre clé, et cette clé c'est toi.</p>
+    <p>Fait à l'atelier pour Corentin, septembre 2026.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  var VER = 'fil-v1';
+
+  /* Every word he reads is in here, so the tone can be fixed in one place. */
+  var T = {
+    hello:      'Bonjour',
+    helloPlain: 'Bonjour.',
+    opening:    'Écris ce que tu veux, quand tu veux. Une question sur une lame, une idée, une journée à raconter. Je garde tout, et je réponds.',
+    openingLag: 'Je ne réponds pas dans la seconde, et c\'est normal: on n\'est pas sur le même fuseau. Ta lettre est gardée dès que tu appuies, et ma réponse est là quand tu reviens.',
+    mine:       'Toi',
+    theirs:     'La forge',
+    fresh:      'Nouveau',
+    waiting:    'En attente d\'une réponse.',
+    waitAsleep: 'En attente. Je dors en ce moment, la réponse sera là quand tu reviendras.',
+    onAir:      'Je suis réveillé. Ta lettre part tout de suite.',
+    asleep:     'Je dors en ce moment. Écris quand même: ta lettre est gardée, et ma réponse sera là quand tu reviendras.',
+    dead:       'Je n\'arrive pas à joindre l\'atelier. Tes mots restent dans la boîte, rien n\'est perdu.',
+    notYet:     'Ta place n\'est pas encore ouverte. Alessio finit de la préparer. Reviens dans un moment, la page se remet toute seule.',
+    full:       'Ce navigateur ne peut pas prendre la place: elle est déjà liée à d\'autres appareils. Demande à Alessio, lui seul peut l\'ouvrir pour celui-ci.',
+    clock:      function(t){ return 'À l\'atelier il est ' + t + '.'; },
+    send:       'Envoyer',
+    sending:    'Enregistrement',
+    tell:       'Dire ça à Alessio',
+    telling:    'Envoi',
+    emptyBox:   'La boîte est vide. Écris d\'abord quelque chose.',
+    keptOn:     'C\'est enregistré. Ma réponse arrivera ici toute seule, tu n\'as rien à faire.',
+    keptOff:    'C\'est enregistré. Je dors en ce moment: la réponse sera là quand tu reviendras.',
+    keptFail:   'Je n\'ai pas pu enregistrer ta lettre. Tes mots sont encore dans la boîte. Réessaie dans un instant.',
+    told:       'Envoyé. Le téléphone d\'Alessio a sonné. Ce mot va droit à lui, il ne passe pas par le fil.',
+    toldAgain:  'Alessio a déjà ton mot. Il le verra sur son téléphone.',
+    tellFail:   'Je n\'ai pas pu joindre Alessio. Tes mots sont encore dans la boîte. Réessaie dans un instant.',
+    threadFail: 'Je n\'ai pas pu relire tes lettres. Elles ne sont pas perdues, elles sont dans l\'atelier.',
+    retry:      'Réessayer',
+    at:         ' à ',
+    today:      'aujourd\'hui à ',
+    yesterday:  'hier à '
+  };
+
+  var URL_ = 'https://twrlvnfszohyrmivdhre.supabase.co/rest/v1/rpc/';
+  var KEY  = 'sb_publishable_xnDjiN2NRly0mU4aRMpLjA_HVqqcjxI';
+  var SHOP_ZONE = 'America/Edmonton';
+
+  /* THIS BROWSER'S KEY. Minted once on first open, and it is who he is.
+     Twelve readable letters. It never shows on his screen. */
+  var DEV = 'corentin_device';
+  function mintKey(){
+    var A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', out = '', i;
+    var buf = new Uint8Array(12);
+    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(buf);
+    else for (i = 0; i < 12; i++) buf[i] = Math.floor(Math.random() * 256);
+    for (i = 0; i < 12; i++) { out += A[buf[i] % 32]; if (i === 3 || i === 7) out += '-'; }
+    return out;
+  }
+  var device = null, minted = false;
+  try { device = localStorage.getItem(DEV); } catch(e){}
+  if (!device) {
+    device = mintKey();
+    minted = true;
+    try { localStorage.setItem(DEV, device); } catch(e){}
+  }
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* Plain fetch, no library: a CDN that is not there must never take his
+     letters with it. An error carries a kind, because "the shop is asleep",
+     "the phone has no signal" and "the seat is not built yet" are three
+     different sentences and he deserves the right one. */
+  async function rpc(fn, args){
+    var r, body = null;
+    try {
+      r = await fetch(URL_ + fn, {
+        method: 'POST',
+        headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY,
+                   'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(args || {})
+      });
+    } catch(e) {
+      var off = new Error('offline'); off.kind = 'dead'; throw off;
+    }
+    try { body = await r.json(); } catch(e){}
+    if (!r.ok) {
+      var err = new Error('http ' + r.status);
+      err.kind = (r.status === 404 || (body && body.code === 'PGRST202')) ? 'notyet' : 'dead';
+      err.status = r.status;
+      throw err;
+    }
+    return body;
+  }
+
+  /* The database answers ok:false with a human reason and a short code.
+     Take the reason it gives, in whatever field it uses, over anything here. */
+  function reasonOf(d, fallback){
+    if (d) {
+      var f = ['why','reason','message','msg','error'], i;
+      for (i = 0; i < f.length; i++) {
+        if (typeof d[f[i]] === 'string' && d[f[i]].trim()) return d[f[i]].trim();
+      }
+    }
+    return fallback;
+  }
+  function codeOf(d){ return d && typeof d.code === 'string' ? d.code : ''; }
+
+  function esc(s){
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* Honest timestamps, read in his own clock wherever he is standing. */
+  function when(iso){
+    var d = new Date(iso);
+    if (!iso || isNaN(d.getTime())) return '';
+    var now = new Date();
+    var day = function(x){ return new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime(); };
+    var diff = Math.round((day(now) - day(d)) / 86400000);
+    var t = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    if (diff === 0) return T.today + t;
+    if (diff === 1) return T.yesterday + t;
+    var o = { weekday: 'long', day: 'numeric', month: 'long' };
+    if (diff > 300 || diff < 0) o.year = 'numeric';
+    return d.toLocaleDateString('fr-FR', o) + T.at + t;
+  }
+  function shopClock(){
+    try {
+      return new Intl.DateTimeFormat('fr-FR', { timeZone: SHOP_ZONE, hour: '2-digit', minute: '2-digit' }).format(new Date());
+    } catch(e) { return null; }
+  }
+
+  /* ---- what the page knows right now ---- */
+  var letters = [];          // oldest first
+  var cards = {};            // id -> { root, sig }
+  var order = '';
+  var awake = null;          // true, false, or null when it is not known
+  var link = 'dead';         // 'on' once anything answered, else dead / notyet / full
+  var name = '';
+  var total = 0;
+  var busy = false;
+  var misses = 0;
+  var timer = null;
+  var firstPaint = true;
+
+  function nearBottom(){
+    return (window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 220);
+  }
+  function toBottom(smooth){
+    try { window.scrollTo({ top: document.body.scrollHeight, behavior: smooth ? 'smooth' : 'auto' }); }
+    catch(e) { window.scrollTo(0, document.body.scrollHeight); }
+  }
+
+  /* ---- the lamp ---- */
+  function paintState(){
+    var box = $('state'), text = $('stateText'), cls, msg;
+    if (link === 'full')        { cls = 'dead'; msg = T.full; }
+    else if (link === 'notyet') { cls = 'dead'; msg = T.notYet; }
+    else if (link === 'dead')   { cls = 'dead'; msg = T.dead; }
+    else if (awake === true)    { cls = 'on';   msg = T.onAir; }
+    else if (awake === false)   { cls = 'off';  msg = T.asleep; }
+    else                        { cls = 'dead'; msg = T.dead; }
+    box.className = cls;
+    text.textContent = msg;
+    var c = shopClock();
+    $('clock').textContent = c ? T.clock(c) : '';
+  }
+
+  /* ---- one letter, and the answer under it ---- */
+  function sigOf(l){
+    return [String(l.status == null ? '' : l.status),
+            String(l.reply == null ? '' : l.reply),
+            String(l.body  == null ? '' : l.body),
+            String(l.at    == null ? '' : l.at)].join(' ');
+  }
+  function letterHtml(l, isNew){
+    var h = '<div class="mine">' +
+            '<span class="side">' + esc(T.mine) + '</span>' +
+            '<div class="bubble">' + esc(l.body) + '</div>' +
+            '<span class="stamp">' + esc(when(l.at)) + '</span>';
+    if (!l.reply) {
+      h += '<span class="pending">' + esc(awake === false ? T.waitAsleep : T.waiting) + '</span>';
+    }
+    h += '</div>';
+    if (l.reply) {
+      h += '<div class="theirs' + (isNew ? ' fresh' : '') + '">' +
+           '<span class="side">' + esc(T.theirs) + (isNew ? '<span class="tag">' + esc(T.fresh) + '</span>' : '') + '</span>' +
+           '<div class="bubble">' + esc(l.reply) + '</div>' +
+           '</div>';
+    }
+    return h;
+  }
+
+  function sortLetters(arr){
+    return (arr || []).slice()
+      .map(function(l, i){ return { l: l, i: i, t: Date.parse(l && l.at) || 0 }; })
+      .sort(function(a, b){ return (a.t - b.t) || (a.i - b.i); })
+      .map(function(x){ return x.l; });
+  }
+
+  function openingHtml(){
+    var hi = name ? T.hello + ' ' + name + '.' : T.helloPlain;
+    return '<p class="opening"><strong>' + esc(hi) + '</strong> ' + esc(T.opening) +
+           '<br><br>' + esc(T.openingLag) + '</p>';
+  }
+
+  function paintThread(){
+    var box = $('thread'), stick = firstPaint || nearBottom(), fresh = null, i, l, c, sig;
+
+    var head = $('opening');
+    if (!head) {
+      head = document.createElement('div');
+      head.id = 'opening';
+      box.appendChild(head);
+    }
+    head.innerHTML = openingHtml();
+
+    var seen = {};
+    for (i = 0; i < letters.length; i++) {
+      l = letters[i];
+      if (!l || l.id == null) continue;
+      seen[l.id] = 1;
+      c = cards[l.id];
+      sig = sigOf(l);
+      if (!c) {
+        c = cards[l.id] = { root: document.createElement('div'), sig: null, hadReply: !!l.reply };
+        c.root.className = 'letter';
+        box.appendChild(c.root);
+      }
+      if (c.sig !== sig) {
+        var isNew = !!l.reply && !c.hadReply && c.sig !== null;
+        c.root.innerHTML = letterHtml(l, isNew);
+        c.sig = sig;
+        if (l.reply) c.hadReply = true;
+        if (isNew) fresh = c.root;
+      }
+    }
+
+    var id;
+    for (id in cards) {
+      if (!seen[id]) { if (cards[id].root.parentNode) cards[id].root.parentNode.removeChild(cards[id].root); delete cards[id]; }
+    }
+
+    var nowOrder = letters.map(function(x){ return x && x.id; }).join(',');
+    if (nowOrder !== order) {
+      for (i = 0; i < letters.length; i++) {
+        l = letters[i];
+        if (l && cards[l.id]) box.appendChild(cards[l.id].root);
+      }
+      order = nowOrder;
+    }
+
+    if (fresh && !firstPaint) { try { fresh.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch(e){} }
+    else if (stick) toBottom(!firstPaint);
+    firstPaint = false;
+  }
+
+  function note(msg, bad){
+    var n = $('note');
+    n.textContent = msg || '';
+    n.className = bad ? 'bad' : '';
+  }
+
+  /* ---- reading ---- */
+  function takeOpen(d){
+    if (!d || d.ok !== true) {
+      link = codeOf(d) === 'full' ? 'full' : 'dead';
+      if (codeOf(d) === 'full') T.full = reasonOf(d, T.full);
+      else note(reasonOf(d, T.threadFail), true);
+      paintState();
+      return false;
+    }
+    link = 'on';
+    if (typeof d.name === 'string' && d.name.trim()) name = d.name.trim();
+    if (typeof d.awake === 'boolean') awake = d.awake;
+    if (typeof d.count === 'number') total = d.count;
+    letters = sortLetters(d.letters);
+    paintState();
+    paintThread();
+    return true;
+  }
+
+  async function firstRead(){
+    try {
+      var d = await rpc('corentin_open', { p_device: device });
+      takeOpen(d);
+    } catch(e) {
+      link = e.kind === 'notyet' ? 'notyet' : 'dead';
+      paintState();
+      paintThread();
+    }
+    try {
+      var a = await rpc('corentin_brain_awake', {});
+      if (typeof a === 'boolean') { awake = a; paintState(); }
+    } catch(e){}
+  }
+
+  /* The tick. Both doors every few seconds while the page is in front of him,
+     so a reply that lands while he is reading simply appears. Nothing on the
+     screen moves while this runs: he is never shown a wait he did not ask for. */
+  async function tick(){
+    if (document.hidden || busy) return;
+    var got = await Promise.allSettled([
+      rpc('corentin_brain_awake', {}),
+      rpc('corentin_thread', { p_device: device, p_limit: 200 })
+    ]);
+
+    var a = got[0], th = got[1];
+
+    if (a.status === 'fulfilled' && typeof a.value === 'boolean') {
+      awake = a.value;
+      if (link !== 'full') link = 'on';
+    }
+
+    if (th.status === 'fulfilled') {
+      var d = th.value;
+      if (d && d.ok === true) {
+        link = 'on';
+        misses = 0;
+        if (typeof d.awake === 'boolean') awake = d.awake;
+        letters = sortLetters(d.letters);
+        paintThread();
+      } else if (codeOf(d) === 'full') {
+        link = 'full';
+        T.full = reasonOf(d, T.full);
+      } else {
+        misses++;
+      }
+    } else {
+      misses++;
+      if (th.reason && th.reason.kind === 'notyet') link = 'notyet';
+      else if (link !== 'full' && misses > 2) link = 'dead';
+    }
+
+    paintState();
+    pace();
+  }
+
+  /* Do not hammer a shop that is not answering. Five seconds while it talks,
+     thirty once it has stopped. */
+  var every = 0;
+  function pace(){
+    var want = (misses > 3) ? 30000 : 5000;
+    if (timer && every === want) return;
+    stop();
+    every = want;
+    timer = setInterval(tick, want);
+  }
+  function stop(){ if (timer) { clearInterval(timer); timer = null; } every = 0; }
+
+  /* ---- writing ---- */
+  async function send(){
+    if (busy) return;
+    var box = $('box'), text = box.value.trim();
+    if (!text) { note(T.emptyBox, true); box.focus(); return; }
+
+    busy = true;
+    var b = $('send'); b.disabled = true; b.textContent = T.sending;
+    $('tell').disabled = true;
+    note('');
+
+    var d = null, failed = null;
+    try { d = await rpc('corentin_write', { p_device: device, p_body: text }); }
+    catch(e) { failed = e; }
+
+    if (failed) {
+      link = failed.kind === 'notyet' ? 'notyet' : 'dead';
+      note(link === 'notyet' ? T.notYet : T.keptFail, true);
+    } else if (!d || d.ok !== true) {
+      if (codeOf(d) === 'full') { link = 'full'; T.full = reasonOf(d, T.full); note(T.full, true); }
+      else note(reasonOf(d, T.keptFail), true);
+    } else {
+      link = 'on';
+      var l = d.letter || { id: 'local-' + Date.now(), body: text, at: new Date().toISOString() };
+      l.status = l.status || 'waiting';
+      letters = sortLetters(letters.concat([l]));
+      box.value = '';
+      paintThread();
+      note(awake === false ? T.keptOff : T.keptOn, false);
+    }
+
+    paintState();
+    b.disabled = false; b.textContent = T.send;
+    $('tell').disabled = false;
+    busy = false;
+  }
+
+  /* His button, and only his. The mind never reaches this line. */
+  async function tellAlessio(){
+    if (busy) return;
+    var box = $('box'), text = box.value.trim();
+    if (!text) { note(T.emptyBox, true); box.focus(); return; }
+
+    busy = true;
+    var b = $('tell'); b.disabled = true; b.textContent = T.telling;
+    $('send').disabled = true;
+    note('');
+
+    var d = null, failed = null;
+    try { d = await rpc('corentin_tell_alessio', { p_device: device, p_body: text }); }
+    catch(e) { failed = e; }
+
+    if (failed) {
+      link = failed.kind === 'notyet' ? 'notyet' : 'dead';
+      note(link === 'notyet' ? T.notYet : T.tellFail, true);
+    } else if (!d || d.ok !== true) {
+      if (codeOf(d) === 'full') { link = 'full'; T.full = reasonOf(d, T.full); note(T.full, true); }
+      else note(reasonOf(d, T.tellFail), true);
+    } else {
+      link = 'on';
+      if (d.sent === false) note(reasonOf(d, T.toldAgain), false);
+      else { note(T.told, false); box.value = ''; }
+    }
+
+    paintState();
+    b.disabled = false; b.textContent = T.tell;
+    $('send').disabled = false;
+    busy = false;
+  }
+
+  $('write').addEventListener('submit', function(e){ e.preventDefault(); send(); });
+  $('tell').addEventListener('click', function(){ tellAlessio(); });
+
+  /* ---- first open ---- */
+  paintState();
+  paintThread();
+  firstRead().then(function(){ paintState(); pace(); });
+
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden) { stop(); }
+    else { tick(); pace(); }
+  });
+  setInterval(function(){ var c = shopClock(); if (c) $('clock').textContent = T.clock(c); }, 30000);
+
+  window.__fil = { ver: VER, device: device, minted: minted,
+                   state: function(){ return { link: link, awake: awake, name: name, total: total, letters: letters.length }; } };
+
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  }
+})();
+</script>
+</body>
+</html>
