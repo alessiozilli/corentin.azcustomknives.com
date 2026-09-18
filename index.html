@@ -367,7 +367,7 @@ footer p{margin:0 0 7px}
     return [String(l.status == null ? '' : l.status),
             String(l.reply == null ? '' : l.reply),
             String(l.body  == null ? '' : l.body),
-            String(l.at    == null ? '' : l.at)].join(' ');
+            String(l.at    == null ? '' : l.at)].join('\u0000');
   }
   function letterHtml(l, isNew){
     var h = '<div class="mine">' +
